@@ -98,3 +98,19 @@ def eligibility_trace(batch):
         inputs.append(state)
         targets.append(targets)
     return torch.from_numpy(np.array(inputs, dtype = np.float32)), torch.stack(targets)
+
+class MA:
+    def __init__(self, size):
+        self.list_of_rewards = []
+        self.size = size
+    
+    def add(self, rewards):
+        if isinstance(rewards, list):
+            self.list_of_rewards += rewards
+        else:
+            self.list_of_rewards.append(rewards)
+            
+    def average(self):
+        return np.mean(self.list_of_rewards)
+    
+ma = MA(100)
