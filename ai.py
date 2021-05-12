@@ -79,3 +79,22 @@ ai = AI(brain = cnn, body = softmax_body)
 
 n_steps = experience_replay.NStepProgress(doom_env, ai, n_step = 10)
 memory = experience_replay.ReplayMemory(n_steps = n_steps, capacity = 10000)
+
+def eligibility_trace(batch):
+    gamma = 0.99
+    inputs = []
+    targets = []
+    
+    for series in batch:
+        input = Variable(torch.from_numpy(np.array([series[0].state, series[-1].state], dtype = np.float32)))
+        output = cnn(input)
+        cumul_reward = 0.0 if series[-1].done else output[1].data.max()
+        
+        for step in reveresed(series[:-1]):
+            cumul_reward = step.reward + gamma  * cumul_reward
+        state = series[0].state
+        target = output(0).data
+        target[series[0].action] = cumul_reward
+        inputs.append(state)
+        targets.append(targets)
+    return torch.from_numpy(np.array(inputs, dtype = np.float32)), torch.stack(targets)
