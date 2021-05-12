@@ -68,3 +68,14 @@ class AI:
         output = self.brain(input)
         actions = self.body(output)
         return actions.data.numpy()
+    
+doom_env = image_preprocessing.PreprocessImage(SkipWrapper(4)(ToDiscrete("minimal")(gym.make("ppaquette/DoomCorridor-v0"))), width = 80, height = 80, grayscale = True)
+doom_env = gym.wrappers.Monitor(doom_env, "videos", force = True)
+number_actions = doom_env.action_space.n
+
+cnn = CNN(number_actions)
+softmax_body = SoftmaxBody(T = 0.1)
+ai = AI(brain = cnn, body = softmax_body)
+
+n_steps = experience_replay.NStepProgress(doom_env, ai, n_step = 10)
+memory = experience_replay.ReplayMemory(n_steps = n_steps, capacity = 10000)
